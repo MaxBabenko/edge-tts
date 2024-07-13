@@ -31,8 +31,27 @@ def tts_interface(text, voice, rate, pitch):
     return audio, warning
 
 # Create Gradio application
+import gradio as gr
+
 async def create_demo():
     voices = await get_voices()
+    
+    description = """
+    Convert text to speech using Microsoft Edge TTS. Adjust speech rate and pitch: 0 is default, positive values increase, negative values decrease.
+    
+    🎥 **Exciting News: Introducing our Text-to-Video Converter!** 🎥
+    
+    Take your content creation to the next level with our cutting-edge Text-to-Video Converter! 
+    Transform your words into stunning, professional-quality videos in just a few clicks. 
+    
+    ✨ Features:
+    • Convert text to engaging videos with customizable visuals
+    • Choose from 40+ languages and 300+ voices
+    • Perfect for creating audiobooks, storytelling, and language learning materials
+    • Ideal for educators, content creators, and language enthusiasts
+    
+    Ready to revolutionize your content? [Click here to try our Text-to-Video Converter now!](https://text2video.wingetgui.com/)
+    """
     
     demo = gr.Interface(
         fn=tts_interface,
@@ -47,11 +66,11 @@ async def create_demo():
             gr.Markdown(label="Warning", visible=False)
         ],
         title="Edge TTS Text-to-Speech",
-        description="Convert text to speech using Microsoft Edge TTS. Adjust speech rate and pitch: 0 is default, positive values increase, negative values decrease.",
+        description=description,
+        article="Experience the power of Edge TTS for text-to-speech conversion, and explore our advanced Text-to-Video Converter for even more creative possibilities!",
         analytics_enabled=False,
         allow_flagging=False
     )
-    
     return demo
 
 # Run the application
