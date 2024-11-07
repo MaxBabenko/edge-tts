@@ -69,7 +69,7 @@ async def create_demo():
         description=description,
         article="Experience the power of Edge TTS for text-to-speech conversion, and explore our advanced Text-to-Video Converter for even more creative possibilities!",
         analytics_enabled=False,
-        allow_flagging=False
+        allow_flagging="manual"
     )
     return demo
 
