@@ -1,2 +1,2 @@
 edge_tts==6.1.12
-gradio==4.36.1
+gradio==5.7.1
