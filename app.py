@@ -69,11 +69,12 @@ async def create_demo():
         description=description,
         article="Experience the power of Edge TTS for text-to-speech conversion, and explore our advanced Text-to-Video Converter for even more creative possibilities!",
         analytics_enabled=False,
-        allow_flagging="manual"
+        allow_flagging="manual",
+        api_name=None
     )
     return demo
 
 # Run the application
 if __name__ == "__main__":
     demo = asyncio.run(create_demo())
-    demo.launch()
+    demo.launch(show_api=False)
