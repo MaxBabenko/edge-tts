@@ -77,5 +77,4 @@ async def create_demo():
 # Run the application
 if __name__ == "__main__":
     demo = asyncio.run(create_demo())
-    demo.queue(concurrency_count=5, max_size=None)
-    demo.launch(show_api=False)
+    demo.launch(show_api=False, max_threads=10)
