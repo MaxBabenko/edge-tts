@@ -4,17 +4,15 @@ import asyncio
 import tempfile
 import os
 
-# Get all available voices
 async def get_voices():
     voices = await edge_tts.list_voices()
     return {f"{v['ShortName']} - {v['Locale']} ({v['Gender']})": v['ShortName'] for v in voices}
 
-# Text-to-speech function
 async def text_to_speech(text, voice, rate, pitch):
     if not text.strip():
-        return None, gr.Warning("Please enter text to convert.")
+        return None, "Please enter text to convert."
     if not voice:
-        return None, gr.Warning("Please select a voice.")
+        return None, "Please select a voice."
     
     voice_short_name = voice.split(" - ")[0]
     rate_str = f"{rate:+d}%"
@@ -25,13 +23,11 @@ async def text_to_speech(text, voice, rate, pitch):
         await communicate.save(tmp_path)
     return tmp_path, None
 
-# Gradio interface function
-def tts_interface(text, voice, rate, pitch):
-    audio, warning = asyncio.run(text_to_speech(text, voice, rate, pitch))
-    return audio, warning
-
-# Create Gradio application
-import gradio as gr
+async def tts_interface(text, voice, rate, pitch):
+    audio, warning = await text_to_speech(text, voice, rate, pitch)
+    if warning:
+        return audio, gr.Warning(warning)
+    return audio, None
 
 async def create_demo():
     voices = await get_voices()
@@ -74,7 +70,10 @@ async def create_demo():
     )
     return demo
 
-# Run the application
-if __name__ == "__main__":
-    demo = asyncio.run(create_demo())
+async def main():
+    demo = await create_demo()
+    demo.queue(default_concurrency_limit=5)
     demo.launch(show_api=False)
+
+if __name__ == "__main__":
+    asyncio.run(main())
