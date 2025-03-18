@@ -18,9 +18,12 @@ async def text_to_speech(text, voice, rate, pitch):
     rate_str = f"{rate:+d}%"
     pitch_str = f"{pitch:+d}Hz"
     communicate = edge_tts.Communicate(text, voice_short_name, rate=rate_str, pitch=pitch_str)
+    
+    # Save directly to mp3 file (Edge TTS actually outputs mp3 format)
     with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as tmp_file:
         tmp_path = tmp_file.name
         await communicate.save(tmp_path)
+    
     return tmp_path, None
 
 async def tts_interface(text, voice, rate, pitch):
@@ -32,42 +35,92 @@ async def tts_interface(text, voice, rate, pitch):
 async def create_demo():
     voices = await get_voices()
     
-    description = """
-    Convert text to speech using Microsoft Edge TTS. Adjust speech rate and pitch: 0 is default, positive values increase, negative values decrease.
+    with gr.Blocks(analytics_enabled=False) as demo:
+        gr.Markdown("# 🎙️ Edge TTS Text-to-Speech")
+        
+        with gr.Row():
+            with gr.Column(scale=1):
+                gr.Markdown("## Text-to-Speech with Microsoft Edge TTS")
+                gr.Markdown("""
+                Convert text to speech using Microsoft Edge TTS. 
+                Adjust speech rate and pitch: 0 is default, positive values increase, negative values decrease.
+                """)
+                
+                gr.HTML("""
+                <div style="margin: 20px 0; padding: 15px; border: 1px solid #4CAF50; border-radius: 10px; background-color: #f1f8e9;">
+                    <p style="margin-top: 0;"><b>Looking for the new version with more features?</b></p>
+                    <p>The new version includes:</p>
+                    <ul>
+                        <li><b>SRT Subtitle Support</b>: Upload SRT files or input SRT format text</li>
+                        <li><b>File Upload</b>: Easily upload TXT or SRT files</li>
+                        <li><b>Smart Format Detection</b>: Detects plain text or SRT format</li>
+                        <li><b>MP3 Output</b>: Generate high-quality MP3 audio</li>
+                    </ul>
+                    <div style="text-align: center; margin-top: 15px;">
+                        <a href="https://text-to-speech.wingetgui.com/" target="_blank" 
+                           style="display: inline-block; 
+                                  background: linear-gradient(45deg, #4CAF50, #8BC34A); 
+                                  color: white; 
+                                  padding: 12px 30px; 
+                                  text-decoration: none; 
+                                  border-radius: 30px; 
+                                  font-weight: bold; 
+                                  font-size: 16px;
+                                  box-shadow: 0 4px 10px rgba(76, 175, 80, 0.3);
+                                  transition: all 0.3s ease;">Try New Version ➔</a>
+                    </div>
+                </div>
+                """)
+            
+            with gr.Column(scale=1):
+                gr.HTML("""
+                <div style="height: 100%; background-color: #f0f8ff; padding: 15px; border-radius: 10px;">
+                    <h2 style="color: #1e90ff; margin-top: 0;">Turn Your Text Into Professional Videos!</h2>
+                    <ul style="list-style-type: none; padding-left: 0;">
+                        <li>✅ <b>40+ languages and 300+ voices supported</b></li>
+                        <li>✅ <b>Custom backgrounds, music, and visual effects</b></li>
+                        <li>✅ <b>Create engaging video content from simple text</b></li>
+                        <li>✅ <b>Perfect for educators, content creators, and marketers</b></li>
+                    </ul>
+                    <div style="text-align: center; margin-top: 20px;">
+                        <span style="font-size: 96px;">🎬</span>
+                        <div style="margin-top: 15px;">
+                            <a href="https://text2video.wingetgui.com/" target="_blank" 
+                               style="display: inline-block; 
+                                      background: linear-gradient(45deg, #2196F3, #21CBF3); 
+                                      color: white; 
+                                      padding: 12px 30px; 
+                                      text-decoration: none; 
+                                      border-radius: 30px; 
+                                      font-weight: bold; 
+                                      font-size: 16px;
+                                      box-shadow: 0 4px 10px rgba(33, 150, 243, 0.3);
+                                      transition: all 0.3s ease;">Try Text-to-Video ➔</a>
+                        </div>
+                    </div>
+                </div>
+                """)
+                
+        with gr.Row():
+            with gr.Column():
+                text_input = gr.Textbox(label="Input Text", lines=5)
+                voice_dropdown = gr.Dropdown(choices=[""] + list(voices.keys()), label="Select Voice", value="")
+                rate_slider = gr.Slider(minimum=-50, maximum=50, value=0, label="Speech Rate Adjustment (%)", step=1)
+                pitch_slider = gr.Slider(minimum=-20, maximum=20, value=0, label="Pitch Adjustment (Hz)", step=1)
+                
+                generate_btn = gr.Button("Generate Speech", variant="primary")
+                
+                audio_output = gr.Audio(label="Generated Audio", type="filepath")
+                warning_md = gr.Markdown(label="Warning", visible=False)
+                
+                generate_btn.click(
+                    fn=tts_interface,
+                    inputs=[text_input, voice_dropdown, rate_slider, pitch_slider],
+                    outputs=[audio_output, warning_md]
+                )
+        
+        gr.Markdown("Experience the power of Edge TTS for text-to-speech conversion, and explore our advanced Text-to-Video Converter for even more creative possibilities!")
     
-    🎥 **Exciting News: Introducing our Text-to-Video Converter!** 🎥
-    
-    Take your content creation to the next level with our cutting-edge Text-to-Video Converter! 
-    Transform your words into stunning, professional-quality videos in just a few clicks. 
-    
-    ✨ Features:
-    • Convert text to engaging videos with customizable visuals
-    • Choose from 40+ languages and 300+ voices
-    • Perfect for creating audiobooks, storytelling, and language learning materials
-    • Ideal for educators, content creators, and language enthusiasts
-    
-    Ready to revolutionize your content? [Click here to try our Text-to-Video Converter now!](https://text2video.wingetgui.com/)
-    """
-    
-    demo = gr.Interface(
-        fn=tts_interface,
-        inputs=[
-            gr.Textbox(label="Input Text", lines=5),
-            gr.Dropdown(choices=[""] + list(voices.keys()), label="Select Voice", value=""),
-            gr.Slider(minimum=-50, maximum=50, value=0, label="Speech Rate Adjustment (%)", step=1),
-            gr.Slider(minimum=-20, maximum=20, value=0, label="Pitch Adjustment (Hz)", step=1)
-        ],
-        outputs=[
-            gr.Audio(label="Generated Audio", type="filepath"),
-            gr.Markdown(label="Warning", visible=False)
-        ],
-        title="Edge TTS Text-to-Speech",
-        description=description,
-        article="Experience the power of Edge TTS for text-to-speech conversion, and explore our advanced Text-to-Video Converter for even more creative possibilities!",
-        analytics_enabled=False,
-        allow_flagging="manual",
-        api_name=None
-    )
     return demo
 
 async def main():
